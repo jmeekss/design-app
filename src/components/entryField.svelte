@@ -23,7 +23,7 @@
         if (inputVal.trim() === '') {
             value = null; // or '', if you prefer an empty string
             isValid = !required; // If the field is required, an empty value is not valid
-            errorMessage = required ? "This field is required." : "";
+            errorMessage = required ? "This field is required1." : "";
             return;
         }
 
@@ -49,15 +49,12 @@
                 errorMessage = "";
             } else {
                 isValid = false;
-                errorMessage = "This field is required.";
+                errorMessage = "This field is required2.";
             }
             return;
         }
         // Check for non-empty value if required
-        if ((required && val === 0)) {
-            isValid = false;
-            errorMessage = "This field is required.";
-        } else if (min !== undefined && val && val < min) {
+        if (min !== undefined && val && val < min) {
             // Validation for min value
             isValid = false;
             errorMessage = `Value must be greater than or equal to ${min}.`;
