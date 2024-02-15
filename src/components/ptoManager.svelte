@@ -15,7 +15,7 @@
     let waitingApprovalDays = 5;
     let approvedTakenDays = 2;
     let approvedNotTakenDays = 0;
-    let userID = "1gtph4f68lrpg4h";
+    let userID = "";
 
 const nationalHolidays = [
   { date: new Date(2024, 0, 1), name: "New Year's Day" }, 
@@ -36,8 +36,8 @@ const nationalHolidays = [
 
   async function fetchTimeOffData() {
     const authData = await pb.collection('users').authWithPassword(
-    'jmeeks@tuffboom.com',
-    '12345678',
+    '',
+    '',
     );
 
 
