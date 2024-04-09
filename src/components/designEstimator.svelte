@@ -236,7 +236,11 @@
 
             length90Current = mMet(segmentLength, "d") * Math.cos(segmentAngle*Math.PI/180);
 
-            boomFaceForce = equivalentForce / length90Current;
+            if(length90Current == 0){
+                boomFaceForce = equivalentForce;
+            } else {
+                boomFaceForce = equivalentForce / length90Current;
+            }
 
             horizontalLoad[0] = calcHorizontalLoad(unfactoredForce, length90Current, sagRatio);
             horizontalLoad[1] = calcHorizontalLoad(boomFaceForce, length90Current, sagRatio);
@@ -286,11 +290,16 @@
     }
     function calcWave(waveHeightMetric:number, wavePd:number, waterVelocityMetric:number, depthUnderwaterMetric:number){
         if(includeWave){
-            if(waveHeightMetric >= 0 && wavePd >= 0 && waterVelocityMetric >= 0 && depthUnderwaterMetric >= 0){
+            if(waveHeightMetric >= 0 && wavePd > 0 && waterVelocityMetric >= 0 && depthUnderwaterMetric >= 0){
                 let waveLengthMetric:number = (g*wavePeriod*wavePeriod)/(2*Math.PI);
 
-                let particleVelocity:number = Math.PI * (waveHeightMetric/wavePeriod) * Math.pow(Math.E, 2*Math.PI*(-0.5*depthUnderwaterMetric)/waveLengthMetric);
-                let particleAcceleration:number = 2*Math.PI*Math.PI * (waveHeightMetric/(wavePeriod*wavePeriod)) * Math.pow(Math.E, 2*Math.PI*(-0.5*depthUnderwaterMetric)/waveLengthMetric);
+                if(waveLengthMetric == 0){
+                    waveForce = -1;
+                    return 0;
+                }
+
+                let particleVelocity:number = Math.PI * (waveHeightMetric/wavePd) * Math.pow(Math.E, 2*Math.PI*(-0.5*depthUnderwaterMetric)/waveLengthMetric);
+                let particleAcceleration:number = 2*Math.PI*Math.PI * (waveHeightMetric/(wavePd*wavePd)) * Math.pow(Math.E, 2*Math.PI*(-0.5*depthUnderwaterMetric)/waveLengthMetric);
 
                 return 0.5 * waterDensity * dragCO * depthUnderwaterMetric * particleVelocity * particleVelocity + waterDensity * inertiaCO * ((Math.PI * depthUnderwaterMetric * depthUnderwaterMetric)/(4)) * particleAcceleration;
             } else {
@@ -324,7 +333,7 @@
     }
     function calcCurrentIce(waterVelocityMetric:number, planarIceAreaMetric:number, segmentLengthMetric:number){
         if(includeCurrentIce){
-            if(waterVelocityMetric >= 0 && planarIceAreaMetric >= 0 && segmentLengthMetric >= 0){
+            if(waterVelocityMetric >= 0 && planarIceAreaMetric >= 0 && segmentLengthMetric > 0){
                 return waterDensity * RDSLWaterConstantIce * (planarIceAreaMetric/segmentLengthMetric) * waterVelocityMetric * waterVelocityMetric; 
             } else {
                 return -1;
@@ -333,9 +342,15 @@
         return 0;
     }
     function calcHorizontalLoad(forceUsed:number, length:number, sag:number){
+        if(sag <= 0){
+            return -1;
+        }
             return forceUsed * length / (8 * sag/100);
     }
     function calcVerticalLoad(forceUsed:number, distAlong:number, horizLoad:number, angle:number, length:number){
+        if(length <= 0){
+            return -1;
+        }
             return horizLoad * Math.tan(angle) + ((forceUsed * length / 2) * (1 - (2 * distAlong / length)));
     }
     function calcTension(load:number, horizLoad:number){
@@ -370,7 +385,7 @@
                             
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item">
-                                    <SwitchField id="currentDragSwitch" label="Current Drag" bind:checked={includeCurrent} disabled={true}/>
+                                    <SwitchField id="currentDragSwitch" label="Current Drag" bind:checked={includeCurrent} disabled={false}/>
                                 </li>
                                 <li class="list-group-item">
                                     <SwitchField id="windDragSwitch" label="Wind Drag" bind:checked={includeWind} disabled={false}/>
@@ -444,7 +459,7 @@
                                 <NumberInputField id="boomLengthInput" placeholder="Boom Length" bind:value={boomLength} unit={distanceUnit} required={true} min={0}/>
                                 <NumberInputField id="segmentLengthInput" placeholder="Length of Segment" bind:value={segmentLength} unit={distanceUnit} required={true} min={0}/>
                                 <NumberInputField id="segmentAngleInput" placeholder="Angle of Segment with Flow" bind:value={segmentAngle} unit={"°"} required={true} min={0} max={90}/>
-                                <NumberInputField id="sagRatioInput" placeholder="Sag Ratio" bind:value={sagRatio} unit={"%"} required={true} min={0} max={100}/>
+                                <NumberInputField id="sagRatioInput" placeholder="Sag Ratio" bind:value={sagRatio} unit={"%"} required={true} min={1} max={100}/>
                             </div>
                         </div>
                     </div>
